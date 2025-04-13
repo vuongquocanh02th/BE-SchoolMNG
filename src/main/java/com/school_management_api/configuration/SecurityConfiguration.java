@@ -22,10 +22,12 @@ public class SecurityConfiguration {
 
     private final IUserService userService;
     private final JWTService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfiguration(IUserService userService, JWTService jwtService) {
+    public SecurityConfiguration(IUserService userService, JWTService jwtService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -43,15 +45,17 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
+                .authenticationProvider(authenticationProvider()) // 👈 dùng bean đã inject
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
+
     @Bean
-    public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(username -> userService.loadUserByUsername(username));
-        provider.setPasswordEncoder(passwordEncoder);
+        provider.setPasswordEncoder(passwordEncoder); // ✅ dùng passwordEncoder đã inject
         return provider;
     }
 

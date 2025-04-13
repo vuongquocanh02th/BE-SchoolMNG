@@ -1,8 +1,11 @@
 package com.school_management_api.service.security;
 
+import com.school_management_api.model.User;
+import com.school_management_api.service.user.IUserService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +13,7 @@ import java.security.Key;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public class JWTService {
 
     @Value("${jwt.secret}")
@@ -25,12 +29,18 @@ public class JWTService {
         key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
+    private final IUserService userService;
+
     public String generateToken(String username) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiration);
+        // Lấy user từ DB
+        User user = userService.findByUsername(username).orElseThrow();
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("userType", user.getUserType().name())
+                .claim("fullName", user.getFullName())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key)

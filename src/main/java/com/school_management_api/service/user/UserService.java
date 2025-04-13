@@ -1,5 +1,6 @@
 package com.school_management_api.service.user;
 
+import com.school_management_api.model.DTO.UserDTO;
 import com.school_management_api.model.User;
 import com.school_management_api.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,8 +56,21 @@ public class UserService implements IUserService {
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
-                user.getPasswordHash(),
-                Collections.emptyList()
+                user.getPasswordHash(), // password đã được mã hóa
+                Collections.emptyList() // chưa gán quyền
         );
+    }
+    @Override
+    public void registerNewUser(UserDTO dto) {
+        User user = User.builder()
+                .username(dto.getUsername())
+                .passwordHash(passwordEncoder.encode(dto.getPassword()))
+                .fullName(dto.getFullName())
+                .email(dto.getEmail())
+                .phoneNumber(dto.getPhoneNumber())
+                .userType(dto.getUserType())
+                .build();
+
+        userRepository.save(user);
     }
 }
