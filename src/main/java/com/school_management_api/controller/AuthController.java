@@ -24,25 +24,21 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDTO dto) {
-        userService.registerNewUser(dto); // ✅ gọi method mới
         return ResponseEntity.ok("Đăng ký thành công");
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO dto) {
-        System.out.println("➡ Đăng nhập với: " + dto.getUsername() + " / " + dto.getPassword());
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword())
             );
 
-            System.out.println("✅ Xác thực thành công: " + authentication.isAuthenticated());
-
             String token = jwtService.generateToken(dto.getUsername());
             return ResponseEntity.ok(token);
 
         } catch (Exception e) {
-            System.err.println("❌ Đăng nhập thất bại: " + e.getMessage());
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Đăng nhập thất bại: " + e.getMessage());
         }
